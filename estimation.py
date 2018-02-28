@@ -55,11 +55,17 @@ class Computations(object):
 		x = np.dot(x_pre, measurements)
 
 		# Create a Pandas Dataframe to hold the results
-		val_pass = np.zeros((3, 2))
-		val_pass[:, 0] = x[0, :]
-		val_pass[0, 1] = mp.sqrt(Cx[0, 0])
-		val_pass[1, 1] = mp.sqrt(Cx[1, 1])
-		val_pass[2, 1] = mp.sqrt(Cx[2, 2])
+		if method == 1:
+			val_pass = np.zeros((3, 2))
+			val_pass[:, 0] = x[:, 0]
+			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
+			val_pass[1, 1] = mp.sqrt(Cx[1, 1])
+			val_pass[2, 1] = mp.sqrt(Cx[2, 2])
+		elif method == 2 or method == 3:
+			val_pass = np.zeros((2, 2))
+			val_pass[:, 0] = x[:, 0]
+			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
+			val_pass[1, 1] = mp.sqrt(Cx[1, 1])
 		columns = ['Results', 'σx']
 		if method == 1:
 			rows = ['m', 'σΔΗ', 'σΔΝ']

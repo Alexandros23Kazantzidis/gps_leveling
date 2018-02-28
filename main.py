@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import filedialog, StringVar, ttk
+from tkinter import filedialog, StringVar, ttk, messagebox
 from estimation import Computations
 
 
@@ -8,9 +8,10 @@ def import_file():
 	Function to import the data from a file. Returns the name of the file
 	selected by the user.
 	"""
-	global file
+	global start
 	file = filedialog.askopenfilename(initialdir="/Home", title="Select file")
-	return file
+	start = Computations(file)
+	return start
 
 
 def main():
@@ -49,7 +50,7 @@ def main():
 		Function that used the estimation.py module to compute the coefficients of the
 		model based on Least Squares Estimation
 		"""
-		global file
+		global start
 		if gravity.get() == "EGM08(260)":
 			gravity_number = 5
 		elif gravity.get() == "EGM08(2159)":
@@ -60,20 +61,23 @@ def main():
 			gravity_number = 8
 		else:
 			gravity_number = 9
-		start = Computations(file)
-		results = start.estimation(gravity_number, v.get())
-		display.delete(1.0, END)
-		display.insert(INSERT, results)
 
-		start.create_map()
+		try:
+			results = start.estimation(gravity_number, v.get())
+			display.delete(1.0, END)
+			display.insert(INSERT, results)
+
+			start.create_map()
+		except:
+			messagebox.showerror("Error", "The data file were in wrong format")
 
 	# Radio Button to choose the method - model of corrections
 	v = IntVar()
 	choose_method = Radiobutton(tab1, text='Model with m, σΔH and σΔΝ', variable=v, value=1)
 	choose_method.grid(row=2, column=0)
-	choose_method = Radiobutton(tab1, text='Model with m and σΔH ', variable=v, value=2)
+	choose_method = Radiobutton(tab1, text='Model with m and σΔN ', variable=v, value=2)
 	choose_method.grid(row=3, column=0)
-	choose_method = Radiobutton(tab1, text='Model with m and σΔΝ', variable=v, value=3)
+	choose_method = Radiobutton(tab1, text='Model with m and σΔH', variable=v, value=3)
 	choose_method.grid(row=4, column=0)
 
 	# Dropdown Menu to choose which Gravity model to use
