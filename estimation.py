@@ -23,10 +23,14 @@ class Computations(object):
 		for i in range(0, len(data)):
 			measurements[i, 0] = data[i, 3] - data[i, 4] - data[i, col_N]
 
+		# Choose the right error for the geoid heights based on the model
+		N_error = [0.0757, 0.0824, 0.0729, 0.0846, 0.0437]
+		print(N_error[col_N - 5])
+
 		# Get the variances - errors for each point
 		measur_errors = np.zeros((len(data), 1))
 		for i in range(0, len(data)):
-			measur_errors[i, 0] = 1/(data[i, 10]**2 + data[i, 11]**2 + 0.0757**2)
+			measur_errors[i, 0] = 1/(data[i, 10]**2 + data[i, 11]**2 + N_error[col_N - 5]**2)
 
 		# Create the weights matrix with the variances of each point
 		weights = np.eye((len(data)))
