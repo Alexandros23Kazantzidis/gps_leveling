@@ -26,6 +26,8 @@ clf = linear_model.LinearRegression()
 clf.fit(X_train, y_train)
 
 print(clf.score(X_test, y_test))
+print(clf.coef_)
+print(clf.intercept_)
 scores = cross_val_score(clf, X, y, cv=8)
 print(scores)
 
@@ -38,6 +40,7 @@ machine_learning = clf.predict(X_predict) - y
 start = Computations("data.csv")
 results = start.estimation(6, 1)
 parametric_model = (start.measurements_estimation - start.initial)
+
 
 plt.plot(np.abs(machine_learning), color='b')
 plt.plot(np.abs(parametric_model), color='r')
