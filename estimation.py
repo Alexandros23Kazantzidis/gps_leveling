@@ -8,46 +8,57 @@ import scipy.interpolate as sp
 
 class Computations(object):
 
-	def __init__(self, filename):
-		self.data = np.genfromtxt(filename, delimiter=',')
+	# def __init__(self, filename):
+	# 	self.data = np.genfromtxt(filename, delimiter=',')
 
-	def estimation(self, col_N, method):
+	def read_fl(self, filename):
+		self.fl = np.genfromtxt(filename, delimiter=',')
+
+	def read_H(self, filename):
+		self.H = np.genfromtxt(filename, delimiter=',')
+
+	def read_h(self, filename):
+		self.h = np.genfromtxt(filename, delimiter=',')
+
+	def read_N(self, filename):
+		self.N = np.genfromtxt(filename, delimiter=',')
+
+	def estimation(self, method):
 		"""
 		Function to compute the parameters of the corrections model with
 		Least Squares Estimation
 		"""
-		data = self.data
 
 		# Create the measurements vector h - H - N
-		measurements = np.zeros((len(data), 1))
-		for i in range(0, len(data)):
-			measurements[i, 0] = data[i, 3] - data[i, 4] - data[i, col_N]
+		measurements = np.zeros((len(self.H), 1))
+		for i in range(0, len(self.H)):
+			measurements[i, 0] = self.h[i, 0] - self.H[i, 0] - self.N[i, 0]
 		self.initial = measurements[:]
 
 		# Choose the right error for the geoid heights based on the model
-		N_error = [0.0757, 0.0824, 0.0729, 0.0846, 0.0437]
+		# N_error = [0.0757, 0.0824, 0.0729, 0.0846, 0.0437]
 
 		# Get the variances - errors for each point
-		measur_errors = np.zeros((len(data), 1))
-		for i in range(0, len(data)):
-			measur_errors[i, 0] = 1/(data[i, 10]**2 + data[i, 11]**2 + N_error[col_N - 5]**2)
+		measur_errors = np.zeros((len(self.H), 1))
+		for i in range(0, len(self.H)):
+			measur_errors[i, 0] = 1/(self.h[i, 1]**2 + self.H[i, 1]**2 + self.N[i, 1]**2)
 
 		# Create the weights matrix with the variances of each point
-		weights = np.eye((len(data)))
+		weights = np.eye((len(self.H)))
 		weights = weights * measur_errors
 
 
 		# Create the state matrix based on the user's preference about the model
 		if method == 1:
-			A = np.ones((len(data), 3))
-			A[:, 1] = data[:, 4]
-			A[:, 2] = data[:, col_N]
+			A = np.ones((len(self.H), 3))
+			A[:, 1] = self.H[:, 0]
+			A[:, 2] = self.N[:, 0]
 		elif method == 2:
-			A = np.ones((len(data), 2))
-			A[:, 1] = data[:, col_N]
+			A = np.ones((len(self.H), 2))
+			A[:, 1] = self.N[:, 0]
 		elif method == 3:
-			A = np.ones((len(data), 2))
-			A[:, 1] = data[:, 4]
+			A = np.ones((len(self.H), 2))
+			A[:, 1] = self.H[:, 0]
 
 		# Compute the apriori variance estimation
 		Cx_pre = np.dot(np.transpose(A), weights)
@@ -89,7 +100,7 @@ class Computations(object):
 
 	def create_map(self):
 
-		x, y = self.data[:, 1], self.data[:, 2]
+		x, y = self.fl[:, 0], self.fl[:, 1]
 		z = self.measurements_estimation
 		X = np.linspace(np.min(x), np.max(x))
 		Y = np.linspace(np.min(y), np.max(y))
@@ -106,9 +117,13 @@ class Computations(object):
 
 if __name__ == "__main__":
 
-	start = Computations("data.csv")
-	results = start.estimation(6, 1)
-	print(start.measurements_estimation - start.initial)
-	# start.create_map()
+	start = Computations()
+	start.read_fl("fl.csv")
+	start.read_H("H.csv")
+	start.read_h("h.csv")
+	start.read_N("N_egm.csv")
+	results = start.estimation(1)
+	print(results)
+	start.create_map()
 
 
