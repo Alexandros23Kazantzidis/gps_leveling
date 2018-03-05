@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pandas as pd
 import scipy.interpolate as sp
+import time
 
 
 class Computations(object):
@@ -23,7 +24,7 @@ class Computations(object):
 	def read_N(self, filename):
 		self.N = np.genfromtxt(filename, delimiter=',')
 
-	def estimation(self, method):
+	def estimation(self, method, cut_off=0):
 		"""
 		Function to compute the parameters of the corrections model with
 		Least Squares Estimation
@@ -36,7 +37,10 @@ class Computations(object):
 		self.initial = measurements[:]
 
 		# Choose the right error for the geoid heights based on the model
-		# N_error = [0.0757, 0.0824, 0.0729, 0.0846, 0.0437]
+		try:
+			self.N[:, 1] = self.N[:, 1] * cut_off
+		except:
+			pass
 
 		# Get the variances - errors for each point
 		measur_errors = np.zeros((len(self.H), 1))
@@ -112,6 +116,24 @@ class Computations(object):
 		plt.xlabel("Lon")
 		plt.ylabel("Lat")
 		plt.title("Correction Surface (m)")
+		plt.show(block=False)
+		time.sleep(1)
+
+	def plot(self):
+
+		f, axarr = plt.subplots(2, figsize=(7,10))
+		f.subplots_adjust(hspace=0.5)
+		axarr[0].plot(self.initial, color='b', label='Initial')
+		axarr[0].plot(self.measurements_estimation, color='r', label='After LSE')
+		axarr[0].set_title("Initial differences - After LSE differences")
+		axarr[0].set_ylabel("h - H - N (m)")
+		axarr[0].legend()
+
+		axarr[1].plot(self.error_estimation, color='b', label='Estimation Error')
+		axarr[1].set_title("Error estimation")
+		axarr[1].set_ylabel("Error (m)")
+		axarr[1].legend()
+
 		plt.show()
 
 
@@ -119,11 +141,12 @@ if __name__ == "__main__":
 
 	start = Computations()
 	start.read_fl("fl.csv")
-	start.read_H("H.csv")
-	start.read_h("h.csv")
+	start.read_H("H_ortho.csv")
+	start.read_h("h_data.csv")
 	start.read_N("N_egm.csv")
 	results = start.estimation(1)
 	print(results)
 	start.create_map()
+	start.plot()
 
 
