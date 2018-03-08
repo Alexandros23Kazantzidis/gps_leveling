@@ -59,7 +59,7 @@ def main():
 	root = Tk()
 
 	root.title("Gps Leveling Application")
-	root.geometry("1600x600")
+	root.geometry("1600x700")
 
 	# Create three tabs in the GUI
 	tabControl = ttk.Notebook(root)
@@ -79,11 +79,7 @@ def main():
 	input_frame.grid(row=0, column=0)
 
 	results_frame = Frame(tab1)
-	results_frame.grid(row=0, column=1, padx=30)
-
-
-
-
+	results_frame.grid(row=1, column=0, pady=30)
 
 
 	# Button for importing the data
@@ -155,11 +151,11 @@ def main():
 	# Radio Button to choose the method - model of corrections
 	v = IntVar()
 	choose_method = Radiobutton(results_frame, text='Model with m, σΔH and σΔΝ', variable=v, value=1)
-	choose_method.grid(row=0, column=0)
-	choose_method = Radiobutton(results_frame, text='Model with m and σΔN ', variable=v, value=2)
 	choose_method.grid(row=1, column=0)
-	choose_method = Radiobutton(results_frame, text='Model with m and σΔH', variable=v, value=3)
+	choose_method = Radiobutton(results_frame, text='Model with m and σΔN ', variable=v, value=2)
 	choose_method.grid(row=2, column=0)
+	choose_method = Radiobutton(results_frame, text='Model with m and σΔH', variable=v, value=3)
+	choose_method.grid(row=3, column=0)
 
 	# #
 	# # Dropdown Menu to choose which Gravity model to use
@@ -174,7 +170,7 @@ def main():
 
 	# The results Text Field area that will shows us the computed values
 	display = Text(results_frame, height=10, width=25)
-	display.grid(row=4, column=2)
+	display.grid(row=5, column=0)
 
 	root.mainloop()
 

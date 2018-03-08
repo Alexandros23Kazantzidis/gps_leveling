@@ -38,7 +38,7 @@ class Computations(object):
 
 		# Choose the right error for the geoid heights based on the model
 		try:
-			self.N[:, 1] = self.N[:, 1] * cut_off
+			self.N[:, 1] = self.N[:, 1] + cut_off
 		except:
 			pass
 
@@ -65,13 +65,13 @@ class Computations(object):
 			A[:, 1] = self.H[:, 0]
 
 		# Compute the apriori variance estimation
-		Cx_pre = np.dot(np.transpose(A), weights)
-		Cx = np.linalg.inv(np.dot(Cx_pre, A))
+		Cx_pre = np.matmul(np.transpose(A), weights)
+		Cx = np.linalg.inv(np.matmul(Cx_pre, A))
 
 
 		# Compute the estimation for the parameters of the model
-		x_pre = np.dot(Cx, Cx_pre)
-		x = np.dot(x_pre, measurements)
+		x_pre = np.matmul(Cx_pre, measurements)
+		x = np.matmul(Cx, x_pre)
 
 		# Create a Pandas Dataframe to hold the results
 		if method == 1:
@@ -95,7 +95,7 @@ class Computations(object):
 		val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
 
 		# Compute measurements estimation
-		self.measurements_estimation = (np.dot(A, x))
+		self.measurements_estimation = (np.matmul(A, x))
 
 		# Compute the error of the estimation
 		self.error_estimation = measurements - self.measurements_estimation
@@ -144,9 +144,10 @@ if __name__ == "__main__":
 	start.read_H("H_ortho.csv")
 	start.read_h("h_data.csv")
 	start.read_N("N_egm.csv")
-	results = start.estimation(1)
+	results = start.estimation(3)
+	print(np.mean(start.initial))
+	print(np.std(start.initial))
+	print(np.mean(start.measurements_estimation))
+	print(np.std(start.measurements_estimation))
 	print(results)
-	start.create_map()
-	start.plot()
-
 
