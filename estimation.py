@@ -99,7 +99,8 @@ class Computations(object):
 			rows = ['m', 'σΔΝ']
 		elif method == 3:
 			rows = ['m', 'σΔΗ']
-		val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
+		self.val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
+
 
 		# Compute measurements estimation
 		self.measurements_estimation = (np.matmul(A, x))
@@ -107,7 +108,7 @@ class Computations(object):
 		# Compute the error of the estimation
 		self.error_estimation = measurements - self.measurements_estimation
 
-		return val_pass
+		return self.val_pass
 
 	def create_map(self):
 		"""
@@ -150,6 +151,19 @@ class Computations(object):
 
 		plt.show()
 
+	def save_to_csv(self):
+		"""
+		Function to output results to a .csv file
+		"""
+
+		df = pd.DataFrame(self.initial, columns=["Initial_Dif"])
+		df = df.assign(After_LSE_Dif=self.measurements_estimation)
+		df = df.assign(Estimation_Errors=self.error_estimation)
+		df.index.name = "Points"
+		self.val_pass.to_csv("Results.csv", sep="\t")
+		with open('Results.csv', 'a') as f:
+			df.to_csv(f, header=True, sep="\t")
+
 
 if __name__ == "__main__":
 
@@ -159,9 +173,10 @@ if __name__ == "__main__":
 	start.read_h("h_data.csv")
 	start.read_N("N_egm.csv")
 	results = start.estimation(3)
-	print(np.mean(start.initial))
-	print(np.std(start.initial))
-	print(np.mean(start.measurements_estimation))
-	print(np.std(start.measurements_estimation))
-	print(results)
+	# print(np.mean(start.initial))
+	# print(np.std(start.initial))
+	# print(np.mean(start.measurements_estimation))
+	# print(np.std(start.measurements_estimation))
+	# print(results)
+	start.save_to_csv()
 

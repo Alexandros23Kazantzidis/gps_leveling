@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import filedialog, StringVar, ttk, messagebox
 from estimation import Computations
+import numpy as np
 
 
 class main_gui():
@@ -158,6 +159,7 @@ class main_gui():
 		except:
 			pass
 		results = self.start.estimation(self.v.get(), input_value)
+		self.start.save_to_csv()
 		self.display.delete(1.0, END)
 		self.display.insert(INSERT, results)
 		self.start.create_map()
