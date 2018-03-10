@@ -9,19 +9,28 @@ import time
 
 class Computations(object):
 
-	# def __init__(self, filename):
-	# 	self.data = np.genfromtxt(filename, delimiter=',')
-
 	def read_fl(self, filename):
+		"""
+		Function to read the geographic coordinates φ,λ of the points
+		"""
 		self.fl = np.genfromtxt(filename, delimiter=',')
 
 	def read_H(self, filename):
+		"""
+		Function to read the orthometric height H of the points
+		"""
 		self.H = np.genfromtxt(filename, delimiter=',')
 
 	def read_h(self, filename):
+		"""
+		Function to read the geometric height h of the points
+		"""
 		self.h = np.genfromtxt(filename, delimiter=',')
 
 	def read_N(self, filename):
+		"""
+		Function to read the geoid height N of the points
+		"""
 		self.N = np.genfromtxt(filename, delimiter=',')
 
 	def estimation(self, method, cut_off=0):
@@ -51,7 +60,6 @@ class Computations(object):
 		weights = np.eye((len(self.H)))
 		weights = weights * measur_errors
 
-
 		# Create the state matrix based on the user's preference about the model
 		if method == 1:
 			A = np.ones((len(self.H), 3))
@@ -67,7 +75,6 @@ class Computations(object):
 		# Compute the apriori variance estimation
 		Cx_pre = np.matmul(np.transpose(A), weights)
 		Cx = np.linalg.inv(np.matmul(Cx_pre, A))
-
 
 		# Compute the estimation for the parameters of the model
 		x_pre = np.matmul(Cx_pre, measurements)
@@ -103,6 +110,9 @@ class Computations(object):
 		return val_pass
 
 	def create_map(self):
+		"""
+		Function to create a grid - contour map of the correction surface of the model
+		"""
 
 		x, y = self.fl[:, 0], self.fl[:, 1]
 		z = self.measurements_estimation
@@ -120,6 +130,10 @@ class Computations(object):
 		time.sleep(1)
 
 	def plot(self):
+		"""
+		Function to create two plots, one for the initial and after LSE measurements
+		and one for the estimation errors of the model
+		"""
 
 		f, axarr = plt.subplots(2, figsize=(7,10))
 		f.subplots_adjust(hspace=0.5)
