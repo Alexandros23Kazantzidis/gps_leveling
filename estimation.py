@@ -164,6 +164,25 @@ class Computations(object):
 		with open('Results.csv', 'a') as f:
 			df.to_csv(f, header=True, sep="\t")
 
+		statistics = np.zeros((4, 3))
+		statistics[0, 0] = np.mean(self.initial)
+		statistics[1, 0] = np.std(self.initial)
+		statistics[2, 0] = np.max(self.initial)
+		statistics[3, 0] = np.min(self.initial)
+		statistics[0, 1] = np.mean(self.measurements_estimation)
+		statistics[1, 1] = np.std(self.measurements_estimation)
+		statistics[2, 1] = np.max(self.measurements_estimation)
+		statistics[3, 1] = np.min(self.measurements_estimation)
+		statistics[0, 2] = np.mean(self.error_estimation)
+		statistics[1, 2] = np.std(self.error_estimation)
+		statistics[2, 2] = np.max(self.error_estimation)
+		statistics[3, 2] = np.min(self.error_estimation)
+
+		df_1 = pd.DataFrame(statistics, index=["Mean", "STD", "Max", 'Min'],
+		columns=["Initial_Dif", "After_LSE_Dif", "Estimation_errors"])
+		with open('Results.csv', 'a') as f:
+			df_1.to_csv(f, header=True, sep="\t")
+
 
 if __name__ == "__main__":
 
