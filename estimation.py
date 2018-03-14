@@ -101,7 +101,6 @@ class Computations(object):
 			rows = ['m', 'σΔΗ']
 		self.val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
 
-
 		# Compute measurements estimation
 		self.measurements_estimation = (np.matmul(A, x))
 
@@ -187,15 +186,15 @@ class Computations(object):
 if __name__ == "__main__":
 
 	start = Computations()
-	start.read_fl("fl.csv")
-	start.read_H("H_ortho.csv")
-	start.read_h("h_data.csv")
-	start.read_N("N_egm.csv")
-	results = start.estimation(3)
+	start.read_fl("model_data/fl.csv")
+	start.read_H("model_data/H_ortho.csv")
+	start.read_h("model_data/h_data.csv")
+	start.read_N("model_data/N_egm.csv")
+	results = start.estimation(1)
 	# print(np.mean(start.initial))
 	# print(np.std(start.initial))
 	# print(np.mean(start.measurements_estimation))
 	# print(np.std(start.measurements_estimation))
 	# print(results)
 	start.save_to_csv()
-
+	print(results)
