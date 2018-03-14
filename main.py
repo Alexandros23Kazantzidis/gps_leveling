@@ -7,7 +7,7 @@ import numpy as np
 
 class MainGui(object):
 	"""
-	Main function that runs the GUI.
+	Main class that creates and runs the GUI.
 	"""
 
 	def __init__(self):
@@ -147,6 +147,7 @@ class MainGui(object):
 		info_label_h = Label(results_frame_2, text="What kind of model have you inputted?")
 		info_label_h.grid(row=0, column=2)
 
+		# Radio Button for the user to select the model that he has inputted
 		self.method_var = IntVar()
 		choose_method = Radiobutton(results_frame_2, text='Model with m, σΔH and σΔΝ', variable=self.method_var, value=1)
 		choose_method.grid(row=1, column=2)
@@ -163,6 +164,9 @@ class MainGui(object):
 
 
 	def calculate_ortho(self):
+		"""
+		Function to compute the orthometric heights from the model and the h,N
+		"""
 
 		results = self.start_2.compute_ortho(self.method_var.get())
 		self.display_2.delete(1.0, END)
@@ -170,7 +174,7 @@ class MainGui(object):
 
 	def import_parameters(self):
 		"""
-		Function to import the φ,λ from a file. Returns the name of the file
+		Function to import the model parameters from a file. Returns the name of the file
 		selected by the user.
 		"""
 
@@ -181,7 +185,7 @@ class MainGui(object):
 
 	def import_data(self):
 		"""
-		Function to import the φ,λ from a file. Returns the name of the file
+		Function to import the data h,N from a file. Returns the name of the file
 		selected by the user.
 		"""
 
@@ -189,7 +193,6 @@ class MainGui(object):
 		self.start_2.read_data(file)
 		self.list_data.delete(1.0, END)
 		self.list_data.insert(INSERT, self.start_2.data[:])
-
 
 	def import_fl(self):
 		"""
