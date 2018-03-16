@@ -38,6 +38,7 @@ class Computations(object):
 		Function to compute the parameters of the corrections model with
 		Least Squares Estimation
 		"""
+		self.method = method
 
 		# Create the measurements vector h - H - N
 		measurements = np.zeros((len(self.H), 1))
@@ -150,7 +151,7 @@ class Computations(object):
 
 		plt.show()
 
-	def save_to_csv(self):
+	def save_all_to_csv(self):
 		"""
 		Function to output results to a .csv file
 		"""
@@ -182,6 +183,15 @@ class Computations(object):
 		with open('Results.csv', 'a') as f:
 			df_1.to_csv(f, header=True, sep="\t")
 
+	def save_model_to_csv(self):
+		"""
+		Function to save only the parameters of the model
+		"""
+
+		self.val_pass.to_csv("Model.csv", sep="\t")
+		with open('Model.csv', 'a') as f:
+			f.write("Method used: " + str(self.method))
+
 
 if __name__ == "__main__":
 
@@ -190,11 +200,11 @@ if __name__ == "__main__":
 	start.read_H("model_data/H_ortho.csv")
 	start.read_h("model_data/h_data.csv")
 	start.read_N("model_data/N_egm.csv")
-	results = start.estimation(1)
+	results = start.estimation(2)
 	# print(np.mean(start.initial))
 	# print(np.std(start.initial))
 	# print(np.mean(start.measurements_estimation))
 	# print(np.std(start.measurements_estimation))
 	# print(results)
-	start.save_to_csv()
+	start.save_model_to_csv()
 	print(results)

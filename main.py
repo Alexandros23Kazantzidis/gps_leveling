@@ -27,7 +27,7 @@ class MainGui(object):
 		tabControl.grid(row=0, column=0)
 
 		tab2 = Frame(tabControl,  padx=200, pady=50)
-		tabControl.add(tab2, text="Estimate Orthometric Heights")
+		tabControl.add(tab2, text="Prediction Cross Validation")
 		tabControl.grid(row=0, column=0)
 
 		tab3 = Frame(tabControl,  padx=200, pady=50)
@@ -250,7 +250,8 @@ class MainGui(object):
 		except:
 			pass
 		results = self.start.estimation(self.v.get(), input_value)
-		self.start.save_to_csv()
+		self.start.save_model_to_csv()
+		self.start.save_all_to_csv()
 		self.display.delete(1.0, END)
 		self.display.insert(INSERT, results)
 		self.start.create_map()
