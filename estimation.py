@@ -188,9 +188,15 @@ class Computations(object):
 		Function to save only the parameters of the model
 		"""
 
-		self.val_pass.to_csv("Model.csv", sep="\t")
-		with open('Model.csv', 'a') as f:
+		self.val_pass.to_csv("cross_validation.csv", sep="\t")
+		with open('cross_validation.csv', 'a') as f:
 			f.write("Method used: " + str(self.method))
+			f.write("\n" + "h" + "\n")
+			np.savetxt(f, self.h[:, 0])
+			f.write("\n" + "H" + "\n")
+			np.savetxt(f, self.H[:, 0])
+			f.write("\n" + "N" + "\n")
+			np.savetxt(f, self.N[:, 0])
 
 
 if __name__ == "__main__":
