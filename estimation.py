@@ -205,6 +205,10 @@ class Computations(object):
 	# 		f.write("Method used: " + str(self.method))
 
 	def variance_component(self, method, cut_off=0):
+		"""
+		Function to compute variance components based on the MINQUE method
+		it uses the same information as the estimation function and computes
+		"""
 
 		# Create the state matrix based on the user's preference about the model
 		if method == 1:
@@ -291,6 +295,21 @@ class Computations(object):
 		df = pd.DataFrame(thita[n], columns=["Components"], index=["θh", "θH", "θN"])
 		return df
 
+	def save_components_to_csv(self, df):
+		"""
+		Function to output the parameter computed by variance_component function
+		It saves to a csv file the values of the components and the new updated
+		weight matrix that can be used for a new Least Squares Estimation of the
+		model
+		"""
+		with open('Components_Results.csv', 'w') as f:
+			f.write("Weights Matrix")
+			f.write("\n")
+		with open('Components_Results.csv', 'a') as f:
+			np.savetxt(f, np.diag(self.weights), delimiter="\t")
+			df.to_csv(f, header=True, sep="\t")
+
+
 
 if __name__ == "__main__":
 
@@ -308,6 +327,6 @@ if __name__ == "__main__":
 	# print(np.std(start.initial))
 	# print(np.mean(start.measurements_estimation))
 	# print(np.std(start.measurements_estimation))
-	# start.save_model_to_csv()
+	start.save_components_to_csv(results)
 	# start.plot()
 	# print(results)

@@ -12,7 +12,6 @@ class MainGui(object):
 	def __init__(self):
 
 		self.start = Computations()
-		# self.start_2 = FindOrtho()
 
 		self.root = Tk()
 
@@ -29,10 +28,6 @@ class MainGui(object):
 		tabControl.add(tab2, text="Cross Validation")
 		tabControl.grid(row=0, column=0)
 
-		tab3 = Frame(tabControl,  padx=200, pady=50)
-		tabControl.add(tab3, text="Variance Component Estimation")
-		tabControl.grid(row=0, column=0)
-
 		input_frame = Frame(tab1)
 		input_frame.grid(row=0, column=0)
 		results_frame = Frame(tab1)
@@ -42,11 +37,6 @@ class MainGui(object):
 		input_frame_2.grid(row=0, column=0)
 		results_frame_2 = Frame(tab2)
 		results_frame_2.grid(row=1, column=0, pady=30)
-
-		input_frame_3 = Frame(tab3)
-		input_frame_3.grid(row=0, column=0)
-		results_frame_3 = Frame(tab3)
-		results_frame_3.grid(row=1, column=0, pady=30)
 
 		# Button for importing the data
 		import_data = Button(input_frame, text="Import φ,λ", command=self.import_fl)
@@ -307,7 +297,7 @@ class MainGui(object):
 
 	def calculate(self):
 		"""
-		Function that used the estimation.py module to compute the coefficients of the
+		Function that uses the estimation.py module to compute the coefficients of the
 		model based on Least Squares Estimation
 		"""
 
@@ -324,6 +314,10 @@ class MainGui(object):
 		self.start.plot()
 
 	def calculate_components(self):
+		"""
+		Function that uses the estimation.py module to compute the variance componenents of the
+		model based on MINQUE method
+		"""
 
 		input_value = self.cut_off.get("1.0", END)
 		try:
