@@ -190,13 +190,14 @@ class Computations(object):
 
 		self.val_pass.to_csv("cross_validation.csv", sep="\t")
 		with open('cross_validation.csv', 'a') as f:
-			f.write("Method used: " + str(self.method))
 			f.write("\n" + "h" + "\n")
 			np.savetxt(f, self.h[:, 0])
 			f.write("\n" + "H" + "\n")
 			np.savetxt(f, self.H[:, 0])
 			f.write("\n" + "N" + "\n")
 			np.savetxt(f, self.N[:, 0])
+			f.write("Method used: " + str(self.method))
+
 
 
 if __name__ == "__main__":

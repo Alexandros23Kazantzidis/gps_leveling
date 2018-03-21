@@ -1,20 +1,47 @@
 import numpy as np
+import pandas as pd
 
 
 class FindOrtho(object):
 
-	def read_data(self, filename_1):
+	def read_model(self, filename_1):
 		"""
-		Function to read data in format of h,N
+		Function to read the model data in format of parameters and the method number
+		(Model.csv that is the output of estimation.py)
 		"""
-		self.data = np.genfromtxt(filename_1, delimiter=",")
+		self.model = pd.read_csv(filename_1, sep="\t")
+		self.model_method = self.model.iloc[-1:].values[0].tolist()[0].split(" ")[-1]
+		self.model_parameters = self.model["Results"].dropna()
 
-	def create_model(self, filename):
+	def read_data(self, filename):
 		"""
 		Function to read the parameters of the model from a .csv file in the following format
 		m σΔH σΔΝ
 		"""
-		self.parameters = np.genfromtxt(filename, delimiter="\t")
+		data = pd.read_csv(filename, sep="\t")
+		data = data["Unnamed: 0"].tolist()
+		self.h = []
+		self.H = []
+		self.N = []
+		flag = 0
+		for i in range(0, len(data)-1):
+			if data[i] == "h":
+				flag = 1
+			elif data[i] == "H":
+				flag = 2
+			elif data[i] == "N":
+				flag = 3
+
+			if flag == 1:
+				self.h.append(data[i+1])
+			elif flag == 2:
+				self.H.append(data[i+1])
+			elif flag == 3:
+				self.N.append(data[i+1])
+
+		self.h = self.h[:-1]
+		self.H = self.H[:-1]
+		self.N = self.N[:-1]
 
 	def compute_ortho(self, method):
 		"""
@@ -38,6 +65,7 @@ class FindOrtho(object):
 if __name__ == "__main__":
 
 	start = FindOrtho()
-	start.read_data("predict_ortho_data/data.csv")
-	start.create_model("predict_ortho_data/model.csv")
-	print(start.compute_ortho(1))
+	start.read_data("cross_validation.csv")
+	print(len(start.h))
+	# start.create_model("predict_ortho_data/model.csv")
+	# print(start.compute_ortho(1))
