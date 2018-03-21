@@ -9,6 +9,9 @@ import time
 
 class Computations(object):
 
+	def __init__(self):
+		self.weights = []
+
 	def read_fl(self, filename):
 		"""
 		Function to read the geographic coordinates φ,λ of the points
@@ -48,7 +51,7 @@ class Computations(object):
 
 		# Choose the right error for the geoid heights based on the model
 		try:
-			self.N[:, 1] = self.N[:, 1] + cut_off
+			self.N[:, 1] = self.N[:, 1] + cut_off**2
 		except:
 			pass
 
@@ -58,8 +61,11 @@ class Computations(object):
 			measur_errors[i, 0] = 1/(self.h[i, 1]**2 + self.H[i, 1]**2 + self.N[i, 1]**2)
 
 		# Create the weights matrix with the variances of each point
-		weights = np.eye((len(self.H)))
-		weights = weights * measur_errors
+		if len(self.weights) > 0:
+			pass
+		else:
+			weights = np.eye((len(self.H)))
+			self.weights = weights * measur_errors
 
 		# Create the state matrix based on the user's preference about the model
 		if method == 1:
@@ -74,7 +80,7 @@ class Computations(object):
 			A[:, 1] = self.H[:, 0]
 
 		# Compute the apriori variance estimation
-		Cx_pre = np.matmul(np.transpose(A), weights)
+		Cx_pre = np.matmul(np.transpose(A), self.weights)
 		Cx = np.linalg.inv(np.matmul(Cx_pre, A))
 
 		# Compute the estimation for the parameters of the model
@@ -183,21 +189,107 @@ class Computations(object):
 		with open('Results.csv', 'a') as f:
 			df_1.to_csv(f, header=True, sep="\t")
 
-	def save_model_to_csv(self):
-		"""
-		Function to save only the parameters of the model
-		"""
+	# def save_model_to_csv(self):
+	# 	"""
+	# 	Function to save only the parameters of the model
+	# 	"""
+	#
+	# 	self.val_pass.to_csv("cross_validation.csv", sep="\t")
+	# 	with open('cross_validation.csv', 'a') as f:
+	# 		f.write("\n" + "h" + "\n")
+	# 		np.savetxt(f, self.h[:, 0])
+	# 		f.write("\n" + "H" + "\n")
+	# 		np.savetxt(f, self.H[:, 0])
+	# 		f.write("\n" + "N" + "\n")
+	# 		np.savetxt(f, self.N[:, 0])
+	# 		f.write("Method used: " + str(self.method))
 
-		self.val_pass.to_csv("cross_validation.csv", sep="\t")
-		with open('cross_validation.csv', 'a') as f:
-			f.write("\n" + "h" + "\n")
-			np.savetxt(f, self.h[:, 0])
-			f.write("\n" + "H" + "\n")
-			np.savetxt(f, self.H[:, 0])
-			f.write("\n" + "N" + "\n")
-			np.savetxt(f, self.N[:, 0])
-			f.write("Method used: " + str(self.method))
+	def variance_component(self, method, cut_off=0):
 
+		# Create the state matrix based on the user's preference about the model
+		if method == 1:
+			A = np.ones((len(self.H), 3))
+			A[:, 1] = self.H[:, 0]
+			A[:, 2] = self.N[:, 0]
+		elif method == 2:
+			A = np.ones((len(self.H), 2))
+			A[:, 1] = self.N[:, 0]
+		elif method == 3:
+			A = np.ones((len(self.H), 2))
+			A[:, 1] = self.H[:, 0]
+
+		# Choose the right error for the geoid heights based on the model
+		try:
+			self.N[:, 1] = self.N[:, 1] + cut_off**2
+		except:
+			pass
+
+		v0 = []
+		v0.append(np.eye(len(self.H)) * self.h[:, 1] ** 2)
+		v0.append(np.eye(len(self.H)) * self.H[:, 1] ** 2)
+		v0.append(np.eye(len(self.H)) * self.N[:, 1] ** 2)
+
+		# Create the measurements vector h - H - N
+		measurements = np.zeros((len(self.H), 1))
+		for i in range(0, len(self.H)):
+			measurements[i, 0] = self.h[i, 0] - self.H[i, 0] - self.N[i, 0]
+
+		e = 10**3*np.ones((3, 1))
+		thita = []
+		thita_1 = np.ones((3, 1))
+		thita.append(thita_1)
+		n = 0
+		v = np.eye(len(self.H))
+
+		while True:
+
+			weights = np.ravel(thita[n][0]) * v0[0] + np.ravel(thita[n][1]) * v0[1] + np.ravel(thita[n][2]) * v0[2]
+			n = n + 1
+			p = np.linalg.inv(v * weights)
+
+			# Compute the apriori variance estimation
+			Cx_pre = np.matmul(np.transpose(A), p)
+			Cx = np.linalg.inv(np.matmul(Cx_pre, A))
+
+			# Compute the estimation for the parameters of the model
+			x_pre = np.matmul(Cx_pre, measurements)
+			x = np.matmul(Cx, x_pre)
+
+			# Compute measurements estimation
+			measurements_estimation = (np.matmul(A, x))
+
+			# Compute the error of the estimation
+			error_estimation = measurements - measurements_estimation
+
+			w1 = np.matmul(np.linalg.inv(weights), A)  # inv(p) * A
+			w2 = np.matmul(np.transpose(A), np.linalg.inv(weights))  # A' * inv(p)
+			w3 = np.linalg.inv(np.matmul(w2, A))  # inv(A' * inv(p) * A)
+			w4 = np.matmul(w1, w3)  # inv(p) * A * inv(A'inv(p)A)
+			w5 = np.matmul(w4, np.transpose(A))
+			w6 = np.matmul(w5, np.linalg.inv(weights))
+			w = np.linalg.inv(weights) - w6
+
+			J = np.zeros((3, 3))
+			k = np.zeros((3, 1))
+
+			for i in range(0, 3):
+				for j in range(0, 3):
+
+					J[i, j] = np.trace(np.mat(w) * np.mat(v0[i]) * np.mat(w) * np.mat(v0[j]))
+
+				k[i, 0] = np.mat(np.transpose(error_estimation)) * np.mat(np.linalg.inv(weights)) * np.mat(v0[i]) * np.mat(np.linalg.inv(weights)) * np.mat(error_estimation)
+
+			thita.append(np.mat(np.linalg.pinv(J)) * np.mat(k))
+			C_thita = 2 * thita[n]
+			e = thita[n] - thita[n-1]
+
+			if np.abs(np.ravel(thita[n][1]) - np.ravel(thita[n - 1][1])) < 10**(-3.0):
+				break
+
+		self.weights = p
+
+		df = pd.DataFrame(thita[n], columns=["Components"], index=["θh", "θH", "θN"])
+		return df
 
 
 if __name__ == "__main__":
@@ -207,11 +299,15 @@ if __name__ == "__main__":
 	start.read_H("model_data/H_ortho.csv")
 	start.read_h("model_data/h_data.csv")
 	start.read_N("model_data/N_egm.csv")
-	results = start.estimation(2)
+	# results = start.estimation(1)
+	# print(results)
+	# print(start.weights)
+	results = start.variance_component(3)
+	print(results)
 	# print(np.mean(start.initial))
 	# print(np.std(start.initial))
 	# print(np.mean(start.measurements_estimation))
 	# print(np.std(start.measurements_estimation))
+	# start.save_model_to_csv()
+	# start.plot()
 	# print(results)
-	start.save_model_to_csv()
-	print(results)
