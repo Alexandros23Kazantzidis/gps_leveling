@@ -1,4 +1,5 @@
 import numpy as np
+from estimation import Computations
 
 
 class FindOrtho(object):

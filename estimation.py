@@ -79,18 +79,18 @@ class Computations(object):
 
 		# Compute the estimation for the parameters of the model
 		x_pre = np.matmul(Cx_pre, measurements)
-		x = np.matmul(Cx, x_pre)
+		self.x = np.matmul(Cx, x_pre)
 
 		# Create a Pandas Dataframe to hold the results
 		if method == 1:
 			val_pass = np.zeros((3, 2))
-			val_pass[:, 0] = x[:, 0]
+			val_pass[:, 0] = self.x[:, 0]
 			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
 			val_pass[1, 1] = mp.sqrt(Cx[1, 1])
 			val_pass[2, 1] = mp.sqrt(Cx[2, 2])
 		elif method == 2 or method == 3:
 			val_pass = np.zeros((2, 2))
-			val_pass[:, 0] = x[:, 0]
+			val_pass[:, 0] = self.x[:, 0]
 			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
 			val_pass[1, 1] = mp.sqrt(Cx[1, 1])
 		columns = ['Results', 'σx']
@@ -103,7 +103,7 @@ class Computations(object):
 		self.val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
 
 		# Compute measurements estimation
-		self.measurements_estimation = (np.matmul(A, x))
+		self.measurements_estimation = (np.matmul(A, self.x))
 
 		# Compute the error of the estimation
 		self.error_estimation = measurements - self.measurements_estimation
@@ -183,20 +183,52 @@ class Computations(object):
 		with open('Results.csv', 'a') as f:
 			df_1.to_csv(f, header=True, sep="\t")
 
-	def save_model_to_csv(self):
-		"""
-		Function to save only the parameters of the model
-		"""
+	# def save_model_to_csv(self):
+	# 	"""
+	# 	Function to save only the parameters of the model
+	# 	"""
+	#
+	# 	self.val_pass.to_csv("cross_validation.csv", sep="\t")
+	# 	with open('cross_validation.csv', 'a') as f:
+	# 		f.write("Method used: " + str(self.method))
+	# 		f.write("\n" + "h" + "\n")
+	# 		np.savetxt(f, self.h[:, 0])
+	# 		f.write("\n" + "H" + "\n")
+	# 		np.savetxt(f, self.H[:, 0])
+	# 		f.write("\n" + "N" + "\n")
+	# 		np.savetxt(f, self.N[:, 0])
 
-		self.val_pass.to_csv("cross_validation.csv", sep="\t")
-		with open('cross_validation.csv', 'a') as f:
-			f.write("Method used: " + str(self.method))
-			f.write("\n" + "h" + "\n")
-			np.savetxt(f, self.h[:, 0])
-			f.write("\n" + "H" + "\n")
-			np.savetxt(f, self.H[:, 0])
-			f.write("\n" + "N" + "\n")
-			np.savetxt(f, self.N[:, 0])
+	def cross_validation(self, method, cut_off=0):
+
+		initial_h = np.copy(self.h)
+		initial_H = np.copy(self.H)
+		initial_N = np.copy(self.N)
+		accuracy = []
+
+		for i in range(0, len(self.h)-1):
+
+			working_h = np.copy(initial_h)
+			working_H = np.copy(initial_H)
+			working_N = np.copy(initial_N)
+
+			self.h = np.delete(working_h, i, 0)
+			self.H = np.delete(working_H, i, 0)
+			self.N = np.delete(working_N, i, 0)
+
+			true_H = self.H[i, 0]
+
+			self.estimation(method, cut_off)
+
+			if method == 1:
+				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0] - self.x[2] * self.N[i, 0]) / (1 + self.x[1])
+			elif method == 2:
+				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0] - self.x[1] * self.N[i, 0])
+			elif method == 3:
+				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0]) / (1 + self.x[1])
+
+			accuracy.append((predicted - true_H)[0])
+
+		return accuracy
 
 
 if __name__ == "__main__":
@@ -206,11 +238,16 @@ if __name__ == "__main__":
 	start.read_H("model_data/H_ortho.csv")
 	start.read_h("model_data/h_data.csv")
 	start.read_N("model_data/N_egm.csv")
-	results = start.estimation(2)
+	# results = start.estimation(1)
 	# print(np.mean(start.initial))
 	# print(np.std(start.initial))
 	# print(np.mean(start.measurements_estimation))
 	# print(np.std(start.measurements_estimation))
 	# print(results)
-	start.save_model_to_csv()
-	print(results)
+	# start.save_model_to_csv()
+	accuracy = start.cross_validation(2)
+	print(accuracy)
+	plt.plot(accuracy)
+	plt.plot(start.error_estimation[1:])
+	plt.show()
+

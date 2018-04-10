@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import filedialog, StringVar, ttk, messagebox
 from estimation import Computations
-from ortho import FindOrtho
 import numpy as np
 
 
@@ -13,7 +12,6 @@ class MainGui(object):
 	def __init__(self):
 
 		self.start = Computations()
-		self.start_2 = FindOrtho()
 
 		root = Tk()
 
