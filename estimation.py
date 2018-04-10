@@ -11,6 +11,8 @@ class Computations(object):
 
 	def __init__(self):
 		self.weights = []
+		self.thita = [[1, 1, 1]]
+		self.flag = True
 
 	def read_fl(self, filename):
 		"""
@@ -42,6 +44,7 @@ class Computations(object):
 		Least Squares Estimation
 		"""
 		self.method = method
+		self.cut_off = cut_off
 
 		# Create the measurements vector h - H - N
 		measurements = np.zeros((len(self.H), 1))
@@ -58,14 +61,13 @@ class Computations(object):
 		# Get the variances - errors for each point
 		measur_errors = np.zeros((len(self.H), 1))
 		for i in range(0, len(self.H)):
-			measur_errors[i, 0] = 1/(self.h[i, 1]**2 + self.H[i, 1]**2 + self.N[i, 1]**2)
+			measur_errors[i, 0] = 1/(self.h[i, 1]**2 * np.ravel(self.thita[-1][0])
+									 + self.H[i, 1]**2 * np.ravel(self.thita[-1][1])
+									 + self.N[i, 1]**2 * np.ravel(self.thita[-1][2]))
 
-		# Create the weights matrix with the variances of each point
-		if len(self.weights) > 0:
-			pass
-		else:
-			weights = np.eye((len(self.H)))
-			self.weights = weights * measur_errors
+		weights = np.eye((len(self.H)))
+		self.weights = weights * measur_errors
+		if self.flag == True:
 			# Keep the initial weights to restore it later if needed
 			self.initial_weights = self.weights
 
@@ -152,8 +154,9 @@ class Computations(object):
 		axarr[0].set_ylabel("h - H - N (m)")
 		axarr[0].legend()
 
-		axarr[1].plot(self.error_estimation, color='b', label='Estimation Error')
-		axarr[1].set_title("Error estimation")
+		accuracy = self.cross_validation()
+		axarr[1].plot(accuracy, color='b', label='Cross Validation Error')
+		axarr[1].set_title("Cross Validation Error")
 		axarr[1].set_ylabel("Error (m)")
 		axarr[1].legend()
 
@@ -292,10 +295,15 @@ class Computations(object):
 			if np.abs(np.ravel(thita[n][1]) - np.ravel(thita[n - 1][1])) < 10**(-3.0):
 				break
 
-		self.weights = p
+		self.thita = thita
+		self.flag = False
 
 		df = pd.DataFrame(thita[n], columns=["Components"], index=["θh", "θH", "θN"])
 		return df
+
+	def restore(self):
+
+		self.thita = [[1, 1, 1]]
 
 	def save_components_to_csv(self, df):
 		"""
@@ -311,8 +319,10 @@ class Computations(object):
 			np.savetxt(f, np.diag(self.weights), delimiter="\t")
 			df.to_csv(f, header=True, sep="\t")
 
-	def cross_validation(self, method, cut_off=0):
+	def cross_validation(self):
 
+		method = self.method
+		cut_off = self.cut_off
 		initial_h = np.copy(self.h)
 		initial_H = np.copy(self.H)
 		initial_N = np.copy(self.N)
@@ -341,22 +351,38 @@ class Computations(object):
 
 			accuracy.append((predicted - true_H)[0])
 
+		self.h = np.copy(initial_h)
+		self.H = np.copy(initial_H)
+		self.N = np.copy(initial_N)
 		return accuracy
 
 
 if __name__ == "__main__":
 
 	start = Computations()
-	start.read_fl("model_data/fl.csv")
-	start.read_H("model_data/H_ortho.csv")
-	start.read_h("model_data/h_data.csv")
-	start.read_N("model_data/N_egm.csv")
+	start.read_fl("example_data/fl.csv")
+	start.read_H("example_data/H_ortho.csv")
+	start.read_h("example_data/h_data.csv")
+	start.read_N("example_data/N_egm.csv")
 	results = start.estimation(1)
 	# print(results)
-	results = start.cross_validation(1)
+	results = start.cross_validation()
+	print(results)
+	results = start.variance_component(1)
+	# print(results)
+	results = start.estimation(1)
+	# print(results)
+	results = start.cross_validation()
+	print(results)
+	start.restore()
+	results = start.estimation(1)
+	# print(results)
+	results = start.cross_validation()
 	print(results)
 	# print(start.weights)
-	# results = start.variance_component(3)
+	# results = start.variance_component(1)
+	# print(results)
+	# results = start.estimation(1)
 	# print(results)
 	# print(np.mean(start.initial))
 	# print(np.std(start.initial))

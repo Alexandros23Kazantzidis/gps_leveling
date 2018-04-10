@@ -24,19 +24,10 @@ class MainGui(object):
 		tabControl.add(tab1, text="Corrections Model Computation")
 		tabControl.grid(row=0, column=0)
 
-		tab2 = Frame(tabControl,  padx=200, pady=50)
-		tabControl.add(tab2, text="Cross Validation")
-		tabControl.grid(row=0, column=0)
-
 		input_frame = Frame(tab1)
 		input_frame.grid(row=0, column=0)
 		results_frame = Frame(tab1)
 		results_frame.grid(row=1, column=0, pady=30)
-
-		input_frame_2 = Frame(tab2)
-		input_frame_2.grid(row=0, column=0)
-		results_frame_2 = Frame(tab2)
-		results_frame_2.grid(row=1, column=0, pady=30)
 
 		# Button for importing the data
 		import_data = Button(input_frame, text="Import φ,λ", command=self.import_fl)
@@ -339,9 +330,9 @@ class MainGui(object):
 		Function that restores the Initial Weight - Covariance Matrix from the data inputted
 		"""
 
-		self.start.weights = self.start.initial_weights
+		self.start.restore()
 
-		messagebox.showinfo('Update', 'The Initial Weight Matrix has been selected')
+		messagebox.showinfo('Update', 'The Initial Weight Matrix has been restored')
 
 
 if __name__ == "__main__":
