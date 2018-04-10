@@ -109,6 +109,10 @@ class MainGui(object):
 		self.display_components = Text(results_frame, height=10, width=25)
 		self.display_components.grid(row=5, column=2)
 
+		# Button to restore the initial covariance matrix
+		calculate = Button(results_frame, text="Restore Initial Covariance Matrix", command=self.restore)
+		calculate.grid(row=6, column=0, ipadx=30, pady=10)
+
 		#
 		#
 		#
@@ -329,6 +333,15 @@ class MainGui(object):
 		self.display_components.insert(INSERT, results)
 
 		messagebox.showinfo('Update', 'The Weight Matrix has been updated')
+
+	def restore(self):
+		"""
+		Function that restores the Initial Weight - Covariance Matrix from the data inputted
+		"""
+
+		self.start.weights = self.start.initial_weights
+
+		messagebox.showinfo('Update', 'The Initial Weight Matrix has been selected')
 
 
 if __name__ == "__main__":

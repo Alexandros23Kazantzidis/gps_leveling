@@ -66,6 +66,8 @@ class Computations(object):
 		else:
 			weights = np.eye((len(self.H)))
 			self.weights = weights * measur_errors
+			# Keep the initial weights to restore it later if needed
+			self.initial_weights = self.weights
 
 		# Create the state matrix based on the user's preference about the model
 		if method == 1:
@@ -85,18 +87,18 @@ class Computations(object):
 
 		# Compute the estimation for the parameters of the model
 		x_pre = np.matmul(Cx_pre, measurements)
-		x = np.matmul(Cx, x_pre)
+		self.x = np.matmul(Cx, x_pre)
 
 		# Create a Pandas Dataframe to hold the results
 		if method == 1:
 			val_pass = np.zeros((3, 2))
-			val_pass[:, 0] = x[:, 0]
+			val_pass[:, 0] = self.x[:, 0]
 			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
 			val_pass[1, 1] = mp.sqrt(Cx[1, 1])
 			val_pass[2, 1] = mp.sqrt(Cx[2, 2])
 		elif method == 2 or method == 3:
 			val_pass = np.zeros((2, 2))
-			val_pass[:, 0] = x[:, 0]
+			val_pass[:, 0] = self.x[:, 0]
 			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
 			val_pass[1, 1] = mp.sqrt(Cx[1, 1])
 		columns = ['Results', 'σx']
@@ -109,7 +111,7 @@ class Computations(object):
 		self.val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
 
 		# Compute measurements estimation
-		self.measurements_estimation = (np.matmul(A, x))
+		self.measurements_estimation = (np.matmul(A, self.x))
 
 		# Compute the error of the estimation
 		self.error_estimation = measurements - self.measurements_estimation
@@ -309,6 +311,37 @@ class Computations(object):
 			np.savetxt(f, np.diag(self.weights), delimiter="\t")
 			df.to_csv(f, header=True, sep="\t")
 
+	def cross_validation(self, method, cut_off=0):
+
+		initial_h = np.copy(self.h)
+		initial_H = np.copy(self.H)
+		initial_N = np.copy(self.N)
+		accuracy = []
+
+		for i in range(0, len(self.h)-1):
+
+			working_h = np.copy(initial_h)
+			working_H = np.copy(initial_H)
+			working_N = np.copy(initial_N)
+
+			self.h = np.delete(working_h, i, 0)
+			self.H = np.delete(working_H, i, 0)
+			self.N = np.delete(working_N, i, 0)
+
+			true_H = self.H[i, 0]
+
+			self.estimation(method, cut_off)
+
+			if method == 1:
+				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0] - self.x[2] * self.N[i, 0]) / (1 + self.x[1])
+			elif method == 2:
+				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0] - self.x[1] * self.N[i, 0])
+			elif method == 3:
+				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0]) / (1 + self.x[1])
+
+			accuracy.append((predicted - true_H)[0])
+
+		return accuracy
 
 
 if __name__ == "__main__":
@@ -318,15 +351,17 @@ if __name__ == "__main__":
 	start.read_H("model_data/H_ortho.csv")
 	start.read_h("model_data/h_data.csv")
 	start.read_N("model_data/N_egm.csv")
-	# results = start.estimation(1)
+	results = start.estimation(1)
 	# print(results)
-	# print(start.weights)
-	results = start.variance_component(3)
+	results = start.cross_validation(1)
 	print(results)
+	# print(start.weights)
+	# results = start.variance_component(3)
+	# print(results)
 	# print(np.mean(start.initial))
 	# print(np.std(start.initial))
 	# print(np.mean(start.measurements_estimation))
 	# print(np.std(start.measurements_estimation))
-	start.save_components_to_csv(results)
+	# start.save_components_to_csv(results)
 	# start.plot()
 	# print(results)
