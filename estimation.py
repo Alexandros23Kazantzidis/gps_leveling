@@ -82,6 +82,10 @@ class Computations(object):
 		elif method == 3:
 			A = np.ones((len(self.H), 2))
 			A[:, 1] = self.H[:, 0]
+		elif method == 4:
+			A = np.ones((len(self.H), 3))
+			A[:, 1] = self.fl[:, 0]
+			A[:, 2] = self.N[:, 0]
 
 		# Compute the apriori variance estimation
 		Cx_pre = np.matmul(np.transpose(A), self.weights)
@@ -92,7 +96,7 @@ class Computations(object):
 		self.x = np.matmul(Cx, x_pre)
 
 		# Create a Pandas Dataframe to hold the results
-		if method == 1:
+		if method == 1 or method == 4:
 			val_pass = np.zeros((3, 2))
 			val_pass[:, 0] = self.x[:, 0]
 			val_pass[0, 1] = mp.sqrt(Cx[0, 0])
@@ -110,6 +114,9 @@ class Computations(object):
 			rows = ['m', 'σΔΝ']
 		elif method == 3:
 			rows = ['m', 'σΔΗ']
+		elif method == 4:
+			rows = ['m', 'σΔφ', 'σΔΝ']
+
 		self.val_pass = pd.DataFrame(val_pass, index=rows, columns=columns)
 
 		# Compute measurements estimation
@@ -194,21 +201,6 @@ class Computations(object):
 		with open('Results.csv', 'a') as f:
 			df_1.to_csv(f, header=True, sep="\t")
 
-	# def save_model_to_csv(self):
-	# 	"""
-	# 	Function to save only the parameters of the model
-	# 	"""
-	#
-	# 	self.val_pass.to_csv("cross_validation.csv", sep="\t")
-	# 	with open('cross_validation.csv', 'a') as f:
-	# 		f.write("\n" + "h" + "\n")
-	# 		np.savetxt(f, self.h[:, 0])
-	# 		f.write("\n" + "H" + "\n")
-	# 		np.savetxt(f, self.H[:, 0])
-	# 		f.write("\n" + "N" + "\n")
-	# 		np.savetxt(f, self.N[:, 0])
-	# 		f.write("Method used: " + str(self.method))
-
 	def variance_component(self, method, cut_off=0):
 		"""
 		Function to compute variance components based on the MINQUE method
@@ -226,6 +218,11 @@ class Computations(object):
 		elif method == 3:
 			A = np.ones((len(self.H), 2))
 			A[:, 1] = self.H[:, 0]
+		elif method == 4:
+			A = np.ones((len(self.H), 3))
+			A[:, 1] = self.fl[:, 0]
+			A[:, 2] = self.N[:, 0]
+
 
 		# Choose the right error for the geoid heights based on the model
 		try:
@@ -302,6 +299,10 @@ class Computations(object):
 		return df
 
 	def restore(self):
+		"""
+		A simple method to restore the initial weight matrix. If we dont want to use
+		the weights provided by variance component estimation
+		"""
 
 		self.thita = [[1, 1, 1]]
 
@@ -320,12 +321,18 @@ class Computations(object):
 			df.to_csv(f, header=True, sep="\t")
 
 	def cross_validation(self):
+		"""
+		Method to perform cross validation with estimation(). It always leaves 1 point
+		outside of the dataset and estimates the model with the remaining points. Then
+		it predicts the H of the point that was left out and compares it to its true value
+		"""
 
 		method = self.method
 		cut_off = self.cut_off
 		initial_h = np.copy(self.h)
 		initial_H = np.copy(self.H)
 		initial_N = np.copy(self.N)
+		initial_fl = np.copy(self.fl)
 		accuracy = []
 
 		for i in range(0, len(self.h)-1):
@@ -333,10 +340,12 @@ class Computations(object):
 			working_h = np.copy(initial_h)
 			working_H = np.copy(initial_H)
 			working_N = np.copy(initial_N)
+			working_fl = np.copy(initial_fl)
 
 			self.h = np.delete(working_h, i, 0)
 			self.H = np.delete(working_H, i, 0)
 			self.N = np.delete(working_N, i, 0)
+			self.fl = np.delete(working_fl, i, 0)
 
 			true_H = self.H[i, 0]
 
@@ -348,12 +357,15 @@ class Computations(object):
 				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0] - self.x[1] * self.N[i, 0])
 			elif method == 3:
 				predicted = (self.h[i, 0] - self.N[i, 0] - self.x[0]) / (1 + self.x[1])
+			elif method == 4:
+				predicted = self.h[i, 0] - self.N[i, 0] - self.x[0] - self.x[1] * self.fl[i, 0] - self.x[2] * self.N[i, 0]
 
 			accuracy.append((predicted - true_H)[0])
 
 		self.h = np.copy(initial_h)
 		self.H = np.copy(initial_H)
 		self.N = np.copy(initial_N)
+		self.fl = np.copy(initial_fl)
 		return accuracy
 
 
@@ -364,21 +376,9 @@ if __name__ == "__main__":
 	start.read_H("example_data/H_ortho.csv")
 	start.read_h("example_data/h_data.csv")
 	start.read_N("example_data/N_egm.csv")
-	results = start.estimation(1)
-	# print(results)
-	results = start.cross_validation()
+	results = start.estimation(4)
 	print(results)
-	results = start.variance_component(1)
-	# print(results)
-	results = start.estimation(1)
-	# print(results)
-	results = start.cross_validation()
-	print(results)
-	start.restore()
-	results = start.estimation(1)
-	# print(results)
-	results = start.cross_validation()
-	print(results)
+	start.plot()
 	# print(start.weights)
 	# results = start.variance_component(1)
 	# print(results)
