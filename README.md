@@ -3,7 +3,7 @@
 
 A software - GUI that we build along with the other students at the Geoinformatics Msc of Aristotle University of Thessaloniki
 
-*How to run*
+##How to run##
 
 1. Install Python 3.5
 2. Install git
@@ -12,7 +12,7 @@ A software - GUI that we build along with the other students at the Geoinformati
 5. pip install -r requirements.txt
 6. run python3 main.py
 
-*How to use the GUI*
+##How to use the GUI##
 
 First, you have to input the 4 data sets we need which are
 φ,λ - H,σΗ - h,σh - N,σN (where σ means the accuracy - covariance matrix of the data)
