@@ -3,7 +3,7 @@
 
 A software - GUI that we build along with the other students at the Geoinformatics Msc of Aristotle University of Thessaloniki
 
-** How to run**
+*How to run*
 
 1. Install Python 3.5
 2. Install git
@@ -12,7 +12,7 @@ A software - GUI that we build along with the other students at the Geoinformati
 5. pip install -r requirements.txt
 6. run python3 main.py
 
-** How to use the GUI**
+*How to use the GUI*
 
 First, you have to input the 4 data sets we need which are
 φ,λ - H,σΗ - h,σh - N,σN (where σ means the accuracy - covariance matrix of the data)
@@ -23,9 +23,9 @@ Then, you continue by choosing one of the 4 models supported by the current prog
 Finally, press the Calculate Estimation button and the program will run and output
 i) The parameters of the model
 ii) One graph displaying the correction surface produced by the model
-iii) One graph showing the initial differences (h-H-N) and the estimation errors after <br> <br/>
+iii) One graph showing the initial differences (h-H-N) and the estimation errors after
 a cross validation process
-iv) A results.csv file containing the Model parameters, Initial and After Least Squares <br> <br/>
+iv) A results.csv file containing the Model parameters, Initial and After Least Squares
 Differences and Statistics for these Differences
 
 
